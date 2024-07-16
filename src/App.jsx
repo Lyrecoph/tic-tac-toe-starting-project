@@ -6,6 +6,17 @@ import Log from './components/Log.jsx';
 import GameOver from './components/GameOver.jsx';
 import { WINNING_COMBINATIONS } from './winning-combinations.js';
 
+const PLAYERS = {
+  X: 'Player 1',
+  O: 'Player 2'
+};
+// constante générale
+const INITIAL_GAME_BOARD = [
+  [null, null, null],
+  [null, null, null],
+  [null, null, null],
+];
+
 function deriveActivePlayer(gameTurns){
   // Nous dérivons le joueur actif pour la MAJ de l'état de ce tour en fonction du tour précédent
   let currentPlayer = 'X';
@@ -19,31 +30,10 @@ function deriveActivePlayer(gameTurns){
 
 }
 
-const initialGameBoard = [
-  [null, null, null],
-  [null, null, null],
-  [null, null, null],
-];
-
-
-function App() {
-  const [players, setPlayers] = useState({
-    X: 'Player1',
-    O: 'Player2',
-  });
-
-  // Etat de tours de jeu est l'état dérivé
-  const [gameTurns, setGameTurns] = useState([]);
-  // Etat gère le joueur gagnant
-  // Etat du joueur active
-  // const [activePlayer, setActivePlayer] = useState('X');
-
-  // Fonction dérivé qui permet de savoir le joueur active
-  const activePlayer = deriveActivePlayer(gameTurns);
-
+function deriveGameBoard(gameTurns){
   //**Calculer la valeur du tableau de jeu en fonction de l'état gameTurns géré dans App */
   // Etat dérivé, une valeur calculée: deriving state from props
-  let gameBoard = [...initialGameBoard.map(array => [...array])]; // est une valeur calculée qui est dérivé d'un état
+  let gameBoard = [...INITIAL_GAME_BOARD.map(array => [...array])]; // est une valeur calculée qui est dérivé d'un état
 
 
   for (const turn of gameTurns ){
@@ -53,6 +43,10 @@ function App() {
       gameBoard[row][col] = player
   }
 
+  return gameBoard;
+}
+
+function deriveWinner(gameBoard, players) {
   let winner;
 
   // Déterminer si nous avons un gagnant ou non partir de nos gameTurns
@@ -70,12 +64,31 @@ function App() {
       winner = players[firstSquareSymbol];
     }
   }
+  // retourne celui qui gagné ou undefined
+  return winner;
+}
+
+function App() {
+  const [players, setPlayers] = useState(PLAYERS);
+
+  // Etat de tours de jeu est l'état dérivé
+  const [gameTurns, setGameTurns] = useState([]);
+  // Etat gère le joueur gagnant
+  // Etat du joueur active
+  // const [activePlayer, setActivePlayer] = useState('X');
+
+  // Fonction dérivé qui permet de savoir le joueur active
+  const activePlayer = deriveActivePlayer(gameTurns);
+
+  const gameBoard = deriveGameBoard(gameTurns);
+
+  const winner = deriveWinner(gameBoard, players);
 
   const hasDraw = gameTurns.length === 9 && !winner;
 
   // Mettre à jour l'etat du joueur active
   function handleSelectSquare(rowIndex, colIndex){
-    // setActivePlayer((curActivePlayer) => curActivePlayer === 'X' ? 'O' : 'X');
+    
     setGameTurns(prevTurns=>{
       const currentPlayer = deriveActivePlayer(prevTurns);
 
@@ -105,13 +118,13 @@ function App() {
       <div id="game-container">
         <ol id="players" className="highlight-player">
           <Player 
-            initialName="Player1" 
+            initialName={PLAYERS.X}
             symbol="X" 
             isActive={activePlayer === 'X'} 
             onChangeName={handlePlayerNameChange}
           />
           <Player 
-            initialName="Player2" 
+            initialName={PLAYERS.O} 
             symbol="O" 
             isActive={activePlayer === 'O'} 
             onChangeName={handlePlayerNameChange}
