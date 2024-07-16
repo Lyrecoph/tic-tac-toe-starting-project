@@ -3,6 +3,7 @@ import {useState} from 'react';
 import Player from './components/Player.jsx';
 import GameBoard from './components/GameBoard.jsx';
 import Log from './components/Log.jsx';
+import GameOver from './components/GameOver.jsx';
 import { WINNING_COMBINATIONS } from './winning-combinations.js';
 
 function deriveActivePlayer(gameTurns){
@@ -26,6 +27,11 @@ const initialGameBoard = [
 
 
 function App() {
+  const [players, setPlayers] = useState({
+    X: 'Player1',
+    O: 'Player2',
+  });
+
   // Etat de tours de jeu est l'état dérivé
   const [gameTurns, setGameTurns] = useState([]);
   // Etat gère le joueur gagnant
@@ -36,8 +42,8 @@ function App() {
   const activePlayer = deriveActivePlayer(gameTurns);
 
   //**Calculer la valeur du tableau de jeu en fonction de l'état gameTurns géré dans App */
-    // Etat dérivé, une valeur calculée: deriving state from props
-  let gameBoard = initialGameBoard; // est une valeur calculée qui est dérivé d'un état
+  // Etat dérivé, une valeur calculée: deriving state from props
+  let gameBoard = [...initialGameBoard.map(array => [...array])]; // est une valeur calculée qui est dérivé d'un état
 
 
   for (const turn of gameTurns ){
@@ -57,12 +63,15 @@ function App() {
     const thirdSquareSymbol = gameBoard[combination[2].row][combination[2].column];
 
     if (
-      firstSquareSymbol && firstSquareSymbol === secondSquareSymbol && 
+      firstSquareSymbol && 
+      firstSquareSymbol === secondSquareSymbol && 
       firstSquareSymbol === thirdSquareSymbol
     ) {
-      winner = firstSquareSymbol;
+      winner = players[firstSquareSymbol];
     }
   }
+
+  const hasDraw = gameTurns.length === 9 && !winner;
 
   // Mettre à jour l'etat du joueur active
   function handleSelectSquare(rowIndex, colIndex){
@@ -79,14 +88,36 @@ function App() {
     });
   }
 
+  function handleRestart() {
+    setGameTurns([]);
+  }
+
+  function handlePlayerNameChange(symbol, newName) {
+    setPlayers(prevPlayers => {
+      return {
+        ...prevPlayers,
+        [symbol] : newName
+      };
+    });
+  }
   return (
     <main>
       <div id="game-container">
         <ol id="players" className="highlight-player">
-          <Player initialName="Player1" symbol="X" isActive={activePlayer === 'X'} />
-          <Player initialName="Player2" symbol="O" isActive={activePlayer === 'O'}  />
+          <Player 
+            initialName="Player1" 
+            symbol="X" 
+            isActive={activePlayer === 'X'} 
+            onChangeName={handlePlayerNameChange}
+          />
+          <Player 
+            initialName="Player2" 
+            symbol="O" 
+            isActive={activePlayer === 'O'} 
+            onChangeName={handlePlayerNameChange}
+          />
         </ol>
-        {winner && <p>You won, {winner}!</p>}
+        {(winner || hasDraw) && <GameOver winner={winner} onRestart={handleRestart} />}
         <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard} />
       </div>
       <Log turns={gameTurns} />
