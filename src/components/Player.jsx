@@ -5,9 +5,9 @@ export default function Player({initialName, symbol, isActive}){
     const [isEditing, setIsEditing] = useState(false);
     const [playerName, setPlayerName] = useState(initialName);
 
-    // Foncion d'evenement qui met à jour l'état du boutton
+    // Foncion d'evenement qui met à jour l'état du boutton en se basant sur la valeur précedente
     function handleEditClick(){
-        setIsEditing((editing ) => !editing);
+        setIsEditing((editing) => !editing);
     }
 
     function handleChange(event){
